@@ -1217,8 +1217,8 @@ input[type=number] { -moz-appearance:textfield }
 <div id="dbDupOverlay">
   <div class="db-dup-dialog">
     <div class="db-dup-icon">🚫</div>
-    <div class="db-dup-title">Already Submitted</div>
-    <div class="db-dup-subtitle" style="direction:rtl;">الـ System لقى نفس الـ Task موجود في الـ Data Base</div>
+    <div class="db-dup-title" style="direction:rtl;">تم إرسال الـ Task ده بالفعل</div>
+    <div class="db-dup-subtitle" style="direction:rtl;">رقم الـ Task ID ده مسجّل قبل كده، ومش محتاج تبعته مرة تانية.</div>
     <div class="db-dup-info-box">
       <div class="db-dup-info-row">
         <span class="db-dup-info-label">Task ID</span>
@@ -1234,10 +1234,10 @@ input[type=number] { -moz-appearance:textfield }
       </div>
     </div>
     <div class="db-dup-warn-text">
-      ⚠️ لو ده <span class="highlight">غلط</span> وإنت متأكد إن ده Task جديد — <span class="highlight">بلّغ الـ QC</span> ومتبعتوش تاني
+      ⚠️ لو شايف إن الرسالة دي ظهرت بالغلط، راجع الـ Link وتواصل مع الـ QC.
     </div>
     <button class="db-dup-btn-ok" id="dbDupOkBtn" type="button">
-      حسناً — هرجع أتأكد من الـ Link
+      تمام، هراجع الـ Link
     </button>
   </div>
 </div>
@@ -1998,6 +1998,8 @@ function showDbDupDialog(taskId, savedTs, onClose) {
   var d = new Date(savedTs);
   var dateStr = d.toLocaleDateString("en-US", { timeZone: "Africa/Cairo", weekday: "long", year: "numeric", month: "long", day: "numeric" });
   var timeStr = d.toLocaleTimeString("en-US", { timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+  var statusEl = document.getElementById("dbDupStatus");
+  if (statusEl) statusEl.textContent = "Already Submitted";
   document.getElementById("dbDupTaskId").textContent = taskId;
   document.getElementById("dbDupDate").textContent   = dateStr;
   document.getElementById("dbDupTime").textContent   = timeStr;
@@ -2010,75 +2012,103 @@ function showDbDupDialog(taskId, savedTs, onClose) {
 }
 
 function doSubmit(payload, btn) {
+  // Prevent a second click while the current submission is being processed.
+  if (btn.dataset.submitting === "1") return;
+  btn.dataset.submitting = "1";
   _activeBtn = btn;
   btn.disabled = true;
   btn.textContent = "Checking...";
   btn.classList.remove("error-state");
 
   var row = buildRow(payload);
+  var taskId = String(payload.taskId || "").trim();
 
+  function restoreButton() {
+    btn.disabled = false;
+    btn.dataset.submitting = "0";
+    btn.textContent = "\u2714\u00a0 Submit Task";
+  }
+  function alreadySubmitted(savedTs) {
+    restoreButton();
+    toast("Already Submitted: this Task ID was submitted before. No new submission was made.", "err");
+    if (savedTs) showDbDupDialog(taskId, new Date(savedTs), null);
+  }
   function onSuccess() {
     incrementCounter();
     var _sp=(payload.labelerName&&payload.labelerName.toLowerCase()==="radwa hassan")&&(payload.pcNo&&payload.pcNo.toString()==="12");
     toast(_sp?"🦉\u2713 Saved successfully🦉":"\u2714 Saved successfully!","ok");
-    btn.disabled=false; btn.textContent="\u2714\u00a0 Submit Task"; resetForm();
+    restoreButton();
+    resetForm();
   }
-  function onError() {
-    sendWithBeacon(row); btn.disabled=false; btn.textContent="\u26a0\ufe0f Error \u2014 Please Try Again"; btn.classList.add("error-state");
-    toast("\u26a0 Failed to submit \u2014 please check your connection and try again","err");
+  function onError(message) {
+    console.error("Task submission failed:", message || "Unknown error");
+    restoreButton();
+    btn.classList.add("error-state");
+    btn.textContent = "\u26a0\ufe0f Error \u2014 Please Try Again";
+    toast("Failed to submit. Please try again. " + (message || ""), "err");
     setTimeout(function(){ btn.textContent="\u2714\u00a0 Submit Task"; btn.classList.remove("error-state"); },6000);
   }
-
-  function retryWithCheck() {
-    var checkUrl = SUPABASE_URL + "/rest/v1/meti_tasks"
-      + "?task_id=eq." + encodeURIComponent(payload.taskId)
+  function lookupTask() {
+    var checkUrl = SUPABASE_ENDPOINT
+      + "?task_id=eq." + encodeURIComponent(taskId)
       + "&select=task_id,timestamp&limit=1&order=timestamp.desc";
-    fetch(checkUrl, { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY } })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data && data.length > 0) {
-        var savedTs = new Date(data[0].timestamp).getTime();
-        var diffMs  = Date.now() - savedTs;
-        if (diffMs < 5 * 60 * 1000) {
-          onSuccess();
-        } else {
-          btn.disabled = false; btn.textContent = "\u2714\u00a0 Submit Task";
-          showDbDupDialog(payload.taskId, new Date(data[0].timestamp), null);
-        }
-      } else {
-        sendWithFetch(row, function(ok2) { if(ok2) onSuccess(); else onError(); });
-      }
-    })
-    .catch(function() {
-      sendWithFetch(row, function(ok2) { if(ok2) onSuccess(); else onError(); });
+    return fetch(checkUrl, {
+      method: "GET",
+      headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
+    }).then(function(res) {
+      if (!res.ok) throw new Error("Duplicate check HTTP " + res.status);
+      return res.json();
     });
   }
 
-  var dupCheckUrl = SUPABASE_URL + "/rest/v1/meti_tasks"
-    + "?task_id=eq." + encodeURIComponent(payload.taskId)
-    + "&select=task_id,timestamp&limit=1&order=timestamp.desc";
+  // Do not check blank IDs for duplicates: preserve the current blank-ID behavior.
+  if (!taskId) {
+    submitOnce();
+    return;
+  }
 
-  fetch(dupCheckUrl, { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY } })
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data && data.length > 0) {
-      btn.disabled = false; btn.textContent = "\u2714\u00a0 Submit Task";
-      showDbDupDialog(payload.taskId, new Date(data[0].timestamp), null);
-    } else {
-      btn.textContent = "Submitting...";
-      sendWithFetchKeepalive(row, function(ok1) {
-        if(ok1) { onSuccess(); return; }
-        retryWithCheck();
-      });
+  lookupTask().then(function(rows) {
+    if (rows && rows.length) {
+      alreadySubmitted(rows[0].timestamp);
+      return;
     }
-  })
-  .catch(function() {
-    btn.textContent = "Submitting...";
-    sendWithFetchKeepalive(row, function(ok1) {
-      if(ok1) { onSuccess(); return; }
-      retryWithCheck();
-    });
+    submitOnce();
+  }).catch(function(err) {
+    // Fail closed: don't submit when the duplicate check could not be completed.
+    onError("Could not verify whether this Task ID was already submitted. No new submission was sent.");
   });
+
+  function submitOnce() {
+    btn.textContent = "Submitting...";
+    fetch(SUPABASE_ENDPOINT, {
+      method: "POST",
+      mode: "cors",
+      headers: SUPABASE_HEADERS,
+      body: JSON.stringify(row)
+    }).then(function(res) {
+      if (res.ok) {
+        onSuccess();
+        return;
+      }
+      // A unique constraint conflict means another request already inserted this ID.
+      if (res.status === 409 || res.status === 400) {
+        lookupTask().then(function(rows) {
+          if (rows && rows.length) alreadySubmitted(rows[0].timestamp);
+          else onError("HTTP " + res.status);
+        }).catch(function() { onError("HTTP " + res.status); });
+        return;
+      }
+      throw new Error("HTTP " + res.status);
+    }).catch(function(err) {
+      // The server may have saved the row even if the browser did not receive confirmation.
+      lookupTask().then(function(rows) {
+        if (rows && rows.length) alreadySubmitted(rows[0].timestamp);
+        else onError(err.message);
+      }).catch(function() {
+        onError("Could not confirm whether the task was saved. Check the table before retrying.");
+      });
+    });
+  }
 }
 
 document.getElementById("F").addEventListener("submit",function(e){
