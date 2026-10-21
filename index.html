@@ -1217,7 +1217,7 @@ input[type=number] { -moz-appearance:textfield }
 <div id="dbDupOverlay">
   <div class="db-dup-dialog">
     <div class="db-dup-icon">🚫</div>
-    <div class="db-dup-title" style="direction:rtl;">الـ Task ده اتبعت مره بالفعل موجود في الـ Data Base</div>
+    <div class="db-dup-title">Already Submitted</div>
     <div class="db-dup-subtitle" style="direction:rtl;">الـ System لقى نفس الـ Task موجود في الـ Data Base</div>
     <div class="db-dup-info-box">
       <div class="db-dup-info-row">
@@ -2031,9 +2031,7 @@ function doSubmit(payload, btn) {
 
   function retryWithCheck() {
     var checkUrl = SUPABASE_URL + "/rest/v1/meti_tasks"
-      + "?task_id=eq."       + encodeURIComponent(payload.taskId)
-      + "&yubikey_email=eq." + encodeURIComponent(payload.yubikeyEmail)
-      + "&labeler_name=eq."  + encodeURIComponent(payload.labelerName)
+      + "?task_id=eq." + encodeURIComponent(payload.taskId)
       + "&select=task_id,timestamp&limit=1&order=timestamp.desc";
     fetch(checkUrl, { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY } })
     .then(function(r) { return r.json(); })
@@ -2057,9 +2055,7 @@ function doSubmit(payload, btn) {
   }
 
   var dupCheckUrl = SUPABASE_URL + "/rest/v1/meti_tasks"
-    + "?task_id=eq."       + encodeURIComponent(payload.taskId)
-    + "&yubikey_email=eq." + encodeURIComponent(payload.yubikeyEmail)
-    + "&labeler_name=eq."  + encodeURIComponent(payload.labelerName)
+    + "?task_id=eq." + encodeURIComponent(payload.taskId)
     + "&select=task_id,timestamp&limit=1&order=timestamp.desc";
 
   fetch(dupCheckUrl, { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY } })
