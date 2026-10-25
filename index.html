@@ -1275,7 +1275,7 @@ var SUPABASE_HEADERS  = {
 // (من الشيت: Extensions → Apps Script → Deploy → New deployment → Web app → Execute as: Me → Who has access: Anyone)
 // لازم ينتهي بـ /exec
 // ============================================================
-var GAS_WEBAPP_URL = ""; // Old Apps Script removed; QTC/Queue lists load from your Supabase project.
+var GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbwvfvH89KFbv9yD9LRArc9cidWELS20yrHywsdlB9BDNCg7toIn73KQpR1VHQ9cSYCb/exec"; // Google Sheets primary; Supabase backup is handled server-side.
 
 var NK          = "meti_labeler_names";
 var NK_YK       = "meti_yk_history";
@@ -2011,104 +2011,91 @@ function showDbDupDialog(taskId, savedTs, onClose) {
   };
 }
 
+var _metiPendingSubmissions = {};
+window.addEventListener("message", function(event) {
+  var d = event.data;
+  if (!d || d.type !== "METI_SUBMIT_RESULT" || !d.token) return;
+  var pending = _metiPendingSubmissions[d.token];
+  if (!pending) return;
+  delete _metiPendingSubmissions[d.token];
+  if (pending.timer) clearTimeout(pending.timer);
+  if (d.success) pending.onSuccess(d);
+  else if (d.duplicate) pending.onDuplicate(d);
+  else pending.onError(d.message || "The server could not confirm the save.");
+});
+
 function doSubmit(payload, btn) {
-  // Prevent a second click while the current submission is being processed.
   if (btn.dataset.submitting === "1") return;
+  if (!GAS_WEBAPP_URL || !/\/exec$/.test(GAS_WEBAPP_URL)) {
+    toast("Google Sheets endpoint is not configured.", "err"); return;
+  }
   btn.dataset.submitting = "1";
-  _activeBtn = btn;
   btn.disabled = true;
-  btn.textContent = "Checking...";
+  btn.textContent = "Submitting to Google Sheets...";
   btn.classList.remove("error-state");
 
+  var token = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + "-" + Math.random().toString(36).slice(2));
   var row = buildRow(payload);
-  var taskId = String(payload.taskId || "").trim();
+  row.request_id = token;
 
   function restoreButton() {
     btn.disabled = false;
     btn.dataset.submitting = "0";
     btn.textContent = "\u2714\u00a0 Submit Task";
   }
-  function alreadySubmitted(savedTs) {
-    restoreButton();
-    toast("Already Submitted: this Task ID was submitted before. No new submission was made.", "err");
-    if (savedTs) showDbDupDialog(taskId, new Date(savedTs), null);
-  }
-  function onSuccess() {
+  function onSuccess(result) {
     incrementCounter();
-    var _sp=(payload.labelerName&&payload.labelerName.toLowerCase()==="radwa hassan")&&(payload.pcNo&&payload.pcNo.toString()==="12");
-    toast(_sp?"🦉\u2713 Saved successfully🦉":"\u2714 Saved successfully!","ok");
+    var backupMsg = result && result.backup === "pending" ? " (Google Sheets saved; Supabase backup pending)" : "";
+    toast("\u2714 Saved in Google Sheets!" + backupMsg, result && result.backup === "pending" ? "err" : "ok");
     restoreButton();
     resetForm();
   }
+  function onDuplicate(result) {
+    restoreButton();
+    toast("Already Submitted: this Task ID was submitted before.", "err");
+    if (result && result.timestamp) showDbDupDialog(payload.taskId, result.timestamp, null);
+  }
   function onError(message) {
-    console.error("Task submission failed:", message || "Unknown error");
+    console.error("METI submission error:", message);
     restoreButton();
     btn.classList.add("error-state");
-    btn.textContent = "\u26a0\ufe0f Error \u2014 Please Try Again";
-    toast("Failed to submit. Please try again. " + (message || ""), "err");
-    setTimeout(function(){ btn.textContent="\u2714\u00a0 Submit Task"; btn.classList.remove("error-state"); },6000);
-  }
-  function lookupTask() {
-    var checkUrl = SUPABASE_ENDPOINT
-      + "?task_id=eq." + encodeURIComponent(taskId)
-      + "&select=task_id,timestamp&limit=1&order=timestamp.desc";
-    return fetch(checkUrl, {
-      method: "GET",
-      headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
-    }).then(function(res) {
-      if (!res.ok) throw new Error("Duplicate check HTTP " + res.status);
-      return res.json();
-    });
+    btn.textContent = "\u26a0\ufe0f Error \u2014 Check Before Retry";
+    toast("Could not confirm Google Sheets save. Check the sheet before retrying. " + message, "err");
+    setTimeout(function(){ btn.textContent="\u2714\u00a0 Submit Task"; btn.classList.remove("error-state"); }, 7000);
   }
 
-  // Do not check blank IDs for duplicates: preserve the current blank-ID behavior.
-  if (!taskId) {
-    submitOnce();
-    return;
-  }
+  // Hidden iframe form submission avoids browser CORS preflight with Apps Script.
+  // The Apps Script response posts a message back to this page.
+  var frameName = "meti_submit_frame_" + token.replace(/[^a-zA-Z0-9_]/g, "");
+  var frame = document.createElement("iframe");
+  frame.name = frameName;
+  frame.style.display = "none";
+  frame.setAttribute("aria-hidden", "true");
+  document.body.appendChild(frame);
+  var form = document.createElement("form");
+  form.method = "POST";
+  form.action = GAS_WEBAPP_URL;
+  form.target = frameName;
+  form.style.display = "none";
+  var payloadInput = document.createElement("input");
+  payloadInput.type = "hidden";
+  payloadInput.name = "payload";
+  payloadInput.value = JSON.stringify(row);
+  form.appendChild(payloadInput);
+  document.body.appendChild(form);
 
-  lookupTask().then(function(rows) {
-    if (rows && rows.length) {
-      alreadySubmitted(rows[0].timestamp);
-      return;
-    }
-    submitOnce();
-  }).catch(function(err) {
-    // Fail closed: don't submit when the duplicate check could not be completed.
-    onError("Could not verify whether this Task ID was already submitted. No new submission was sent.");
-  });
-
-  function submitOnce() {
-    btn.textContent = "Submitting...";
-    fetch(SUPABASE_ENDPOINT, {
-      method: "POST",
-      mode: "cors",
-      headers: SUPABASE_HEADERS,
-      body: JSON.stringify(row)
-    }).then(function(res) {
-      if (res.ok) {
-        onSuccess();
-        return;
-      }
-      // A unique constraint conflict means another request already inserted this ID.
-      if (res.status === 409 || res.status === 400) {
-        lookupTask().then(function(rows) {
-          if (rows && rows.length) alreadySubmitted(rows[0].timestamp);
-          else onError("HTTP " + res.status);
-        }).catch(function() { onError("HTTP " + res.status); });
-        return;
-      }
-      throw new Error("HTTP " + res.status);
-    }).catch(function(err) {
-      // The server may have saved the row even if the browser did not receive confirmation.
-      lookupTask().then(function(rows) {
-        if (rows && rows.length) alreadySubmitted(rows[0].timestamp);
-        else onError(err.message);
-      }).catch(function() {
-        onError("Could not confirm whether the task was saved. Check the table before retrying.");
-      });
-    });
-  }
+  var timer = setTimeout(function() {
+    delete _metiPendingSubmissions[token];
+    form.remove(); frame.remove();
+    onError("Timed out waiting for the Apps Script response.");
+  }, 30000);
+  _metiPendingSubmissions[token] = {
+    timer: timer,
+    onSuccess: function(result) { form.remove(); frame.remove(); onSuccess(result); },
+    onDuplicate: function(result) { form.remove(); frame.remove(); onDuplicate(result); },
+    onError: function(message) { form.remove(); frame.remove(); onError(message); }
+  };
+  form.submit();
 }
 
 document.getElementById("F").addEventListener("submit",function(e){
