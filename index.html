@@ -1091,6 +1091,213 @@ input[readonly] { background: #f0f7f6; color: #71888d; }
   .form-footer { padding: 13px 12px; }
 }
 
+
+/* Theme selector — compact control, no layout changes to the tracker */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 3px;
+  margin-left: 8px;
+  border: 1px solid rgba(220,250,247,.18);
+  border-radius: 9px;
+  background: rgba(255,255,255,.07);
+}
+.theme-choice {
+  min-width: 27px;
+  height: 25px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(235,250,249,.72);
+  font: 600 .68rem 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background .16s ease, color .16s ease;
+}
+.theme-choice:hover { background: rgba(255,255,255,.12); color: #fff; }
+.theme-choice.active {
+  color: #102f38;
+  background: #bff5eb;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+@media (max-width: 420px) {
+  .theme-switch { margin-left: 3px; gap: 1px; padding: 2px; }
+  .theme-choice { min-width: 23px; height: 23px; padding: 0 4px; font-size: .62rem; }
+}
+
+/* Dark theme: same geometry and components, only surface and text colors change */
+body[data-theme="dark"] {
+  --surface: #142b35;
+  --bg: #0c1920;
+  --border: #294650;
+  --border-focus: #14b8a6;
+  --text: #e4f1f2;
+  --text-secondary: #b2c9cc;
+  --text-muted: #829da3;
+  --error: #ff8278;
+  --error-bg: #3a2427;
+  --success: #5bd6a0;
+  --success-bg: #173a32;
+  --input-bg: #102630;
+  --primary-xlight: #1b3d46;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.18);
+  --shadow-md: 0 5px 20px rgba(0,0,0,.2);
+  --shadow-lg: 0 14px 38px rgba(0,0,0,.38);
+  background:
+    radial-gradient(ellipse at 8% 0%, rgba(20,184,166,.08), transparent 36%),
+    radial-gradient(ellipse at 95% 12%, rgba(103,232,249,.045), transparent 32%),
+    var(--bg);
+  color: var(--text);
+}
+body[data-theme="dark"]::before {
+  background-image:
+    radial-gradient(circle at 18% 14%, rgba(20,184,166,.045) 0%, transparent 44%),
+    radial-gradient(circle at 86% 82%, rgba(21,94,99,.07) 0%, transparent 48%);
+}
+body[data-theme="dark"] .card,
+body[data-theme="dark"] .storage-panel {
+  background: #142b35;
+  border-color: #294650;
+  box-shadow: 0 8px 28px rgba(0,0,0,.2);
+}
+body[data-theme="dark"] .card-section { border-bottom-color: #263f48; }
+body[data-theme="dark"] .section-icon {
+  background: #1b3d46;
+  border-color: #2b555b;
+}
+body[data-theme="dark"] .section-icon svg,
+body[data-theme="dark"] .section-title { color: #67e8d5; }
+body[data-theme="dark"] .field label,
+body[data-theme="dark"] .stage-label { color: #c0d4d6; }
+body[data-theme="dark"] input,
+body[data-theme="dark"] select,
+body[data-theme="dark"] textarea,
+body[data-theme="dark"] .sdb,
+body[data-theme="dark"] .qtc-card,
+body[data-theme="dark"] .storage-item {
+  background: #102630;
+  border-color: #31515b;
+  color: #e4f1f2;
+}
+body[data-theme="dark"] input::placeholder,
+body[data-theme="dark"] textarea::placeholder,
+body[data-theme="dark"] .sdb input.sd-input::placeholder { color: #78949b; }
+body[data-theme="dark"] input:focus,
+body[data-theme="dark"] select:focus,
+body[data-theme="dark"] textarea:focus,
+body[data-theme="dark"] .sdb.open {
+  background: #142f39;
+  border-color: #14b8a6;
+  box-shadow: 0 0 0 3px rgba(20,184,166,.14);
+}
+body[data-theme="dark"] input[readonly],
+body[data-theme="dark"] #stageField {
+  background: #19343e !important;
+  color: #a9c2c6;
+}
+body[data-theme="dark"] .sdb .sd-arrow {
+  background: #1b3d46;
+  border-left-color: #31515b;
+  color: #67e8d5;
+}
+body[data-theme="dark"] .sdl,
+body[data-theme="dark"] .acl {
+  background: #142b35;
+  border-color: #367a78;
+}
+body[data-theme="dark"] .sdl li,
+body[data-theme="dark"] .acl li { color: #dcebed; border-bottom-color: #263f48; }
+body[data-theme="dark"] .sdl li:hover,
+body[data-theme="dark"] .sdl li.sd-hover,
+body[data-theme="dark"] .sdl li.sel,
+body[data-theme="dark"] .acl li:hover,
+body[data-theme="dark"] .acl li.ac-hover {
+  background: #1b4148;
+  color: #8af0df;
+}
+body[data-theme="dark"] .qtc-card:hover { background: #1a3b43; border-color: #3e8983; }
+body[data-theme="dark"] .qtc-card.selected {
+  background: #173a32;
+  border-color: #36b987;
+}
+body[data-theme="dark"] .qtc-card .qtc-name { color: #e4f1f2; }
+body[data-theme="dark"] .qtc-card .qtc-role { color: #67e8d5; }
+body[data-theme="dark"] .qtc-tag {
+  background: #173a32;
+  border-color: #286c55;
+  color: #72e2b2;
+}
+body[data-theme="dark"] .qtc-shift-msg {
+  background: #193b42;
+  border-color: #315c61;
+  color: #a5eee2;
+}
+body[data-theme="dark"] .qtc-grid::-webkit-scrollbar-track { background: #102630; }
+body[data-theme="dark"] .qtc-grid::-webkit-scrollbar-thumb { background: #31515b; }
+body[data-theme="dark"] .form-footer {
+  background: rgba(16,38,48,.96);
+  border-top-color: #294650;
+  box-shadow: 0 -5px 18px rgba(0,0,0,.2);
+}
+body[data-theme="dark"] .storage-toggle {
+  background: #19343e;
+  color: #8ce9dc;
+}
+body[data-theme="dark"] .storage-toggle:hover { background: #1b4148; }
+body[data-theme="dark"] .storage-body,
+body[data-theme="dark"] .storage-group-header { border-color: #294650; }
+body[data-theme="dark"] .storage-group-title { color: #b2c9cc; }
+body[data-theme="dark"] .storage-item { color: #dcebed; }
+body[data-theme="dark"] .warn-box {
+  background: #3a3020;
+  border-color: #78602d;
+  color: #f6d58a;
+}
+body[data-theme="dark"] .autofill-badge {
+  background: #173a32;
+  border-color: #286c55;
+  color: #72e2b2;
+}
+body[data-theme="dark"] .sec-counter,
+body[data-theme="dark"] #floatingCounter {
+  background: linear-gradient(135deg, #155e63 0%, #102f38 100%);
+}
+body[data-theme="dark"] #dbDupOverlay { background: rgba(0,0,0,.58); }
+body[data-theme="dark"] .db-dup-dialog {
+  background: #182f38;
+  color: #e4f1f2;
+  border-top-color: #ff8278;
+}
+body[data-theme="dark"] .db-dup-title { color: #ff9188; }
+body[data-theme="dark"] .db-dup-subtitle,
+body[data-theme="dark"] .db-dup-info-val { color: #c3d6d8; }
+body[data-theme="dark"] .db-dup-info-box {
+  background: #2b2529;
+  border-color: #684044;
+}
+body[data-theme="dark"] .db-dup-info-row { color: #e4f1f2; border-bottom-color: #52383d; }
+body[data-theme="dark"] .db-dup-warn-text {
+  background: #3a3020;
+  border-color: #78602d;
+  color: #f5e6c4;
+}
+body[data-theme="dark"] .toast.ok {
+  background: #173a32;
+  border-color: #286c55;
+  color: #72e2b2;
+}
+body[data-theme="dark"] .toast.err {
+  background: #3a2427;
+  border-color: #754047;
+  color: #ffaaa3;
+}
+body[data-theme="dark"] .theme-choice.active {
+  color: #102f38;
+  background: #bff5eb;
+}
+
 </style>
 </head>
 <body>
@@ -1109,6 +1316,11 @@ input[readonly] { background: #f0f7f6; color: #71888d; }
       <span class="topbar-company">Micro Engineering Tech Inc.</span>
     </div>
     <span class="topbar-time" id="topTime">Loading...</span>
+    <div class="theme-switch" role="group" aria-label="Color theme">
+      <button type="button" class="theme-choice" data-theme-choice="light" aria-label="Light mode" title="Light">☀</button>
+      <button type="button" class="theme-choice" data-theme-choice="dark" aria-label="Dark mode" title="Dark">☾</button>
+      <button type="button" class="theme-choice active" data-theme-choice="system" aria-label="System theme" title="System">Auto</button>
+    </div>
   </div>
 
   <header class="main-header">
@@ -1555,7 +1767,7 @@ var SUPABASE_HEADERS  = {
 // (من الشيت: Extensions → Apps Script → Deploy → New deployment → Web app → Execute as: Me → Who has access: Anyone)
 // لازم ينتهي بـ /exec
 // ============================================================
-var GAS_WEBAPP_URL = ""; // Old Apps Script removed; QTC/Queue lists load from your Supabase project.
+var GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx2Y4aq1-lRpbhfAThcy1TVJzVvFJTDvwhMzwVnf9OgjjEURJCUHbOenoZr2HwK_jxpPA/exec"; // QTC + Queue master lists only
 
 var NK          = "meti_labeler_names";
 var NK_YK       = "meti_yk_history";
@@ -1644,7 +1856,7 @@ function renderCounter() {
 setInterval(function() { getCounter(); renderCounter(); }, 60000);
 
 // ============================================================
-// QTC_DATA — loaded live from tracker_qtc_names in your own Supabase project.
+// QTC_DATA — loaded live from the New Database Google Sheet via Apps Script.
 // الأوبجكت هنا بيفضل فاضي لحد ما البيانات توصل من الشيت؛ لو الفورم
 // فتح والنت بطيء أو الرابط لسه متظبطش، هيفضل فاضي وهيبان تحذير بسيط.
 // ============================================================
@@ -1998,128 +2210,78 @@ document.getElementById("qtcSearch").addEventListener("input",function(){
 });
 
 // ══════════════════════════════════════════════════════════════
-// LIVE DATA — QTC and Queue lists load from your own Supabase tables.
-// أي تعديل (إضافة/حذف اسم أو Queue) في الشيتات هيبان في الفورم من
-// غير ما حد يلمس الكود خالص.
+// LIVE MASTER DATA — QTC + Queue lists are read from New Database Google Sheets.
+// Supabase remains responsible for task submissions only.
 // ══════════════════════════════════════════════════════════════
 function escapeHtml(str){
   return String(str).replace(/[&<>"']/g, function(c){
     return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
   });
 }
-
-// بيلف الجزء اللي محتاج يتلون (highlight) جوه اسم الـ Queue بـ <span class="hl">
 function buildQueueLiHTML(name, highlight){
   var safeName = escapeHtml(name);
   if(!highlight) return safeName;
   var idx = name.toLowerCase().indexOf(highlight.toLowerCase());
   if(idx < 0) return safeName;
-  var before = escapeHtml(name.slice(0, idx));
-  var mid    = escapeHtml(name.slice(idx, idx + highlight.length));
-  var after  = escapeHtml(name.slice(idx + highlight.length));
-  return before + '<span class="hl">' + mid + '</span>' + after;
+  return escapeHtml(name.slice(0,idx)) + '<span class="hl">' + escapeHtml(name.slice(idx,idx+highlight.length)) + '</span>' + escapeHtml(name.slice(idx+highlight.length));
 }
-
-// بيعيد بناء حقل Queue Name بالكامل ببيانات جديدة، وبيعمل reset لكل
-// الـ event listeners بتاعته عشان ميحصلش تكرار (duplicate binding)
 function renderQueueList(items){
   var wrap = document.getElementById("queueFieldWrap");
   if(!wrap || !items) return;
-
   var prevValue = document.getElementById("qName") ? document.getElementById("qName").value : "";
-
-  var liHtml = items.length
-    ? items.map(function(it){
-        return '<li data-v="' + escapeHtml(it.name) + '">' + buildQueueLiHTML(it.name, it.highlight) + '</li>';
-      }).join("")
-    : '<li class="sdl-empty" style="opacity:.6;pointer-events:none;">No queues available</li>';
-
-  wrap.innerHTML =
-    '<div class="sdb" id="queueBtn" tabindex="0">' +
-      '<span class="sd-display" id="queueDisplay"></span>' +
-      '<input class="sd-input" id="queueInput" placeholder="Select Queue..." autocomplete="off" data-lpignore="true">' +
-      '<span class="sd-arrow"></span>' +
-    '</div>' +
-    '<ul class="sdl" id="queueList">' + liHtml + '</ul>' +
-    '<input type="hidden" id="qName">';
-
-  queueDD = makeSearchableDropdown({btnId:"queueBtn", inputId:"queueInput", listId:"queueList", hiddenId:"qName", displayId:"queueDisplay"});
-  if(prevValue) queueDD.setValue(prevValue);
+  var liHtml = items.length ? items.map(function(it){
+    return '<li data-v="' + escapeHtml(it.name) + '">' + buildQueueLiHTML(it.name, it.highlight || "") + '</li>';
+  }).join("") : '<li class="sdl-empty" style="opacity:.6;pointer-events:none;">No queues available</li>';
+  wrap.innerHTML = '<div class="sdb" id="queueBtn" tabindex="0"><span class="sd-display" id="queueDisplay"></span><input class="sd-input" id="queueInput" placeholder="Select Queue..." autocomplete="off" data-lpignore="true"><span class="sd-arrow"></span></div><ul class="sdl" id="queueList">' + liHtml + '</ul><input type="hidden" id="qName">';
+  queueDD = makeSearchableDropdown({btnId:"queueBtn",inputId:"queueInput",listId:"queueList",hiddenId:"qName",displayId:"queueDisplay"});
+  if(prevValue && items.some(function(x){return x.name === prevValue;})) queueDD.setValue(prevValue);
 }
-
-// ══════════════════════════════════════════════════════════════
-// FAST LOAD — بدل نداءين منفصلين لـ Apps Script (queue + qtc)، بقى
-// نداء واحد بس (action=all) وده بيقلل زمن الانتظار تقريبًا للنص.
-// كمان بنحفظ آخر بيانات نزلت في localStorage، وأول ما الفورم يفتح
-// بنعرضها فورًا (من غير أي "Loading names...") وفي نفس الوقت بنجيب
-// النسخة الجديدة من الشيت في الخلفية وبنحدث الشاشة لو فيه فرق.
-// النتيجة: التحضير بيبان فورًا من أول فتح تاني للفورم، وأي تعديل
-// في شيت الـ QTC أو الـ Queue List بيوصل خلال ثواني قليلة تلقائيًا.
-// ══════════════════════════════════════════════════════════════
-var NK_FORM_DATA_CACHE = "meti_form_data_cache_v1";
-
+var NK_FORM_DATA_CACHE = "meti_form_data_cache_v2";
+var formDataRequestPending = false;
 function applyFormData(data){
   if(!data || typeof data !== "object") return;
   if(data.qtc && typeof data.qtc === "object"){
-    var newQtcStr = JSON.stringify(data.qtc);
-    var qtcChanged = newQtcStr !== JSON.stringify(QTC_DATA);
+    var changed = JSON.stringify(data.qtc) !== JSON.stringify(QTC_DATA);
     QTC_DATA = data.qtc;
     qtcDataLoaded = true;
-    var currentShift = document.getElementById("qtcShiftSel") ? document.getElementById("qtcShiftSel").value : "";
-    // كنا بنعمل rebuild للكروت في كل مرة (كل 20 ثانية + كل رجوع للتاب)
-    // وده كان بيمسح اختيار المستخدم ويعمل قفزة سكرول.
-    // دلوقتي: rebuild بس لو البيانات فعلاً اتغيرت، ونحافظ على الاسم المختار.
-    if(currentShift && qtcChanged) buildQTCGrid(currentShift, selectedQTC);
+    var shift = document.getElementById("qtcShiftSel") ? document.getElementById("qtcShiftSel").value : "";
+    if(shift && changed) buildQTCGrid(shift, selectedQTC);
   }
-  if(Array.isArray(data.queue)){
-    renderQueueList(data.queue);
-  }
+  if(Array.isArray(data.queue)) renderQueueList(data.queue);
+  try { localStorage.setItem(NK_FORM_DATA_CACHE, JSON.stringify({data:data, savedAt:Date.now()})); } catch(e) {}
 }
-
 function loadAllFormData(){
-  // Load the QTC and Queue lists from this copy's Supabase database.
-  if (!SUPABASE_URL || SUPABASE_URL.indexOf("PASTE_YOUR_") === 0 ||
-      !SUPABASE_KEY || SUPABASE_KEY.indexOf("PASTE_YOUR_") === 0) {
-    console.warn("Configure SUPABASE_URL and SUPABASE_KEY in index.html first.");
+  if(formDataRequestPending) return;
+  if(!GAS_WEBAPP_URL || GAS_WEBAPP_URL.indexOf("PASTE_") === 0){
+    console.warn("Set GAS_WEBAPP_URL to the New Database Apps Script Web App URL.");
     return;
   }
-
-  var headers = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": "Bearer " + SUPABASE_KEY
+  formDataRequestPending = true;
+  var callbackName = "metiListsCallback_" + Date.now() + "_" + Math.floor(Math.random()*100000);
+  var script = document.createElement("script");
+  var finished = false;
+  var timeout = setTimeout(function(){finish(new Error("Google Sheets list request timed out"));}, 12000);
+  function finish(err){
+    if(finished) return; finished = true; clearTimeout(timeout); formDataRequestPending = false;
+    try { delete window[callbackName]; } catch(e) { window[callbackName] = undefined; }
+    if(script.parentNode) script.parentNode.removeChild(script);
+    if(err){ console.error("Could not load QTC/Queue lists from New Database Google Sheet.", err); }
+  }
+  window[callbackName] = function(data){
+    try {
+      if(!data || data.success !== true) throw new Error((data && data.message) || "Invalid list response");
+      applyFormData(data); finish();
+    } catch(e) { finish(e); }
   };
-
-  Promise.all([
-    fetch(SUPABASE_URL + "/rest/v1/tracker_qtc_names?select=shift,name,role&active=eq.true&order=name.asc", {headers: headers}),
-    fetch(SUPABASE_URL + "/rest/v1/tracker_queue_list?select=name,highlight&active=eq.true&order=sort_order.asc,name.asc", {headers: headers})
-  ])
-  .then(function(responses) {
-    return Promise.all(responses.map(function(r) {
-      if (!r.ok) throw new Error("Supabase list load failed: HTTP " + r.status);
-      return r.json();
-    }));
-  })
-  .then(function(results) {
-    var qtcRows = results[0] || [];
-    var queueRows = results[1] || [];
-    var qtc = {"Morning": [], "Night": [], "Over Night": []};
-    qtcRows.forEach(function(row) {
-      if (!qtc[row.shift]) qtc[row.shift] = [];
-      qtc[row.shift].push({name: row.name, role: row.role || ""});
-    });
-    applyFormData({
-      qtc: qtc,
-      queue: queueRows.map(function(row) {
-        return {name: row.name, highlight: row.highlight || ""};
-      })
-    });
-  })
-  .catch(function(err) {
-    console.error("Could not load QTC/Queue lists from your Supabase project.", err);
-    toast("Could not load QTC/Queue lists. Check Supabase setup.", "err");
-  });
+  script.onerror = function(){finish(new Error("Apps Script endpoint could not be reached"));};
+  script.src = GAS_WEBAPP_URL + (GAS_WEBAPP_URL.indexOf("?") >= 0 ? "&" : "?") + "action=lists&callback=" + encodeURIComponent(callbackName) + "&_=" + Date.now();
+  document.head.appendChild(script);
 }
-
+// Instant cached display, followed by a fresh Google Sheets read.
+try {
+  var cached = JSON.parse(localStorage.getItem(NK_FORM_DATA_CACHE) || "null");
+  if(cached && cached.data) applyFormData(cached.data);
+} catch(e) {}
 loadAllFormData();
 
 // ══════════════════════════════════════════════════════════════
@@ -2597,5 +2759,44 @@ if(lastYK) { document.getElementById("yk").value = lastYK; validateYK(lastYK); }
   }, {passive: true});
 })();
 </script>
+
+<script>
+(function () {
+  var KEY = 'meti-tracker-theme';
+  var choices = Array.prototype.slice.call(document.querySelectorAll('[data-theme-choice]'));
+  var media = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+  function getMode() {
+    try { return localStorage.getItem(KEY) || 'system'; }
+    catch (e) { return 'system'; }
+  }
+  function applyTheme(mode) {
+    var effective = mode === 'system' ? (media && media.matches ? 'dark' : 'light') : mode;
+    document.body.setAttribute('data-theme', effective);
+    document.documentElement.setAttribute('data-theme-mode', mode);
+    choices.forEach(function (button) {
+      var active = button.getAttribute('data-theme-choice') === mode;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+  choices.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var mode = button.getAttribute('data-theme-choice');
+      try { localStorage.setItem(KEY, mode); } catch (e) {}
+      applyTheme(mode);
+    });
+  });
+  if (media) {
+    var onSystemChange = function () {
+      if (getMode() === 'system') applyTheme('system');
+    };
+    if (media.addEventListener) media.addEventListener('change', onSystemChange);
+    else if (media.addListener) media.addListener(onSystemChange);
+  }
+  applyTheme(getMode());
+})();
+</script>
+
 </body>
 </html>
